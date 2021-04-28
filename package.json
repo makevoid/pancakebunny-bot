@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node poc.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "abi-decoder": "^2.4.0",
