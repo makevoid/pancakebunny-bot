@@ -12,11 +12,19 @@ const { eth, utils } = web3
 const { Contract } = eth
 const { toWei } = utils
 
+// configs
+
+const TOKEN = "CAKE"
+const DEINVEST_PRICE_TRESHOLD = 510 // withdraw under this price
+
+const CLAIM_WEEKLY_ACTIVE = true
+const DEINVEST_ACTIVE = false
+
 // Bunny Pools proxy contracts addresses
 const poolContractAddresses = {
-  cake: "0xedfcb78e73f7ba6ad2d829bf5d462a0924da28ed",
-  usdt: "0x0Ba950F0f099229828c10a9B307280a450133FFc",
-  btcb: "0x549d2e2B4fA19179CA5020A981600571C2954F6a",
+  CAKE: "0xedfcb78e73f7ba6ad2d829bf5d462a0924da28ed",
+  USDT: "0x0Ba950F0f099229828c10a9B307280a450133FFc",
+  BTCB: "0x549d2e2B4fA19179CA5020A981600571C2954F6a",
   // ...
 }
 
@@ -24,10 +32,6 @@ const privateKeyPath = "./.private-key-bsc.txt"
 const pvtKey = loadPrivateKey(privateKeyPath)
 const address = loadAccount(eth, pvtKey)
 
-const pools = ["bnb", "cake"]
-const pool = "bnb"
-const abiPath = `./abi/${pool}`
-const ABI = require(abiPath)
 
 const claimAndWithdrawTokens = async () => {
   // TODO:
@@ -67,7 +71,6 @@ const withdrawTokens = async () => {
   console.log("txHash:", txHash)
 }
 
-
 const claimTokens = async () => {
   const methodName = "getReward"
 
@@ -93,11 +96,6 @@ const claimTokens = async () => {
   console.log("txHash:", txHash)
 }
 
-
-
-const TOKEN = "BNB"
-const deinvestTokenPriceTreshold = 510
-
 const deinvest = async () => {
   await claimAndWithdrawTokens()
 }
@@ -118,27 +116,43 @@ const deinvestLoop = async () => {
   const price = await tokenPrice()
   const balance = await tokenPoolBalance()
 
-  if (price < deinvestTokenPriceTreshold && balance > 0) {
-    await deinvest()
+  if (price < DEINVEST_PRICE_TRESHOLD && balance > 0) {
+    await deinvest( // withdraw under this price)
   }
 }
 
-;(async () => {
+// setInterval(deinvestLoop, fiveMinutes)
 
-  // process.exit()
+const claimWeekly = async () => {
+  const oneWeek = 604800 * 1000
+  await claimTokens()
+  setInterval(claimTokens, oneWeek)
+}
 
-
-  // depositBNB()
-
-  // withdrawTokens()
-
-  // claimTokens()
-
-
-  // depositBNB()
-  // depositTokens()
-
+const checkPriceAndDeinvest = async () => {
+  // TODO:
   // const fiveMinutes = 1000*60*5
   // setInterval(deinvestLoop, fiveMinutes)
+}
 
-})()
+const mainFn = async () => {
+  if (CLAIM_WEEKLY_ACTIVE) await claimWeekly()
+  if (DEINVEST_ACTIVE) await checkPriceAndDeinvest()
+
+  // test functions - put CLAIM_WEEKLY_ACTIVE and DEINVEST_ACTIVE as false and uncomment to use
+  // depositBNB()
+  // ...
+}
+
+const main = () => {
+  ;(async () => {
+    try {
+      await mainFn()
+    } catch (err) {
+      console.error("-ERROR-")
+      console.error(err)
+    }
+  })()
+}
+
+main()
