@@ -1,100 +1,63 @@
 const Web3 = require("web3")
-const { readFileSync } = require('fs')
 const { promisify } = require("util")
+const { loadAccount } = require("./lib/account")
+const { loadPrivateKey } = require("./lib/pvt-key")
+const {
+  signTransaction,
+  resolveTxHash,
+  estimateGas
+} = require("./lib/tx")
 const web3 = new Web3("https://bsc-dataseed.binance.org/")
 const { eth, utils } = web3
 const { Contract } = eth
 const { toWei } = utils
 
-// BNB bunny proxy address
-const contractAddress = "0x52cfa188a1468a521a98eaa798e715fbb9eb38a3"
-
-// CAKE bunny proxy address
-// const contractAddress = "0xedfcb78e73f7ba6ad2d829bf5d462a0924da28ed"
-
-// lib - TODO: extract
-
-const signTransaction = (txAttrs, privateKey) => {
-  return new Promise((resolve, reject) => {
-    const txCallback = (err, signedTx) => {
-      if (err) return reject(err)
-      if (!signedTx.rawTransaction) return reject(new Error("NoRawTransactionError"))
-      resolve(signedTx.rawTransaction)
-    }
-    eth.accounts.signTransaction(txAttrs, privateKey, txCallback)
-  })
+// Bunny Pools proxy contracts addresses
+const poolContractAddresses = {
+  cake: "0xedfcb78e73f7ba6ad2d829bf5d462a0924da28ed",
+  usdt: "0x0Ba950F0f099229828c10a9B307280a450133FFc",
+  btcb: "0x549d2e2B4fA19179CA5020A981600571C2954F6a",
+  // ...
 }
 
-const resolveTxHash = (txHashPromise) => (
-  new Promise((resolve, reject) => {
-    const txHashCallback = (txHash) => {
-      console.log("txHash:", txHash)
-      return resolve(txHash)
-    }
-    txHashPromise.on('transactionHash', txHashCallback)
-  })
-)
-
-const pvtKey = readFileSync('./.private-key-bsc.txt').toString().trim()
-if (!pvtKey) {
-  console.error("private key is empty - generate, backup and load a private key first")
-  process.exit(1)
-}
-const account = eth.accounts.privateKeyToAccount(pvtKey)
-const { address } = account
+const privateKeyPath = "./.private-key-bsc.txt"
+const pvtKey = loadPrivateKey(privateKeyPath)
+const address = loadAccount(eth, pvtKey)
 
 const pools = ["bnb", "cake"]
 const pool = "bnb"
-const abiPath = `abi/${pool}`
+const abiPath = `./abi/${pool}`
 const ABI = require(abiPath)
 
-const claimAndWithdrawTokens = () => {
+const claimAndWithdrawTokens = async () => {
   // TODO:
 }
 
-const claimTokens = () => {
-  let swap = new Contract(ABI, contractAddress)
-  swap = swap.methods
+const depositTokens = async () => {
 
-  const getRewardData = swap.getReward().encodeABI()
-
-  // TODO: estimategas
-  const txAttrs = {
-    gasPrice: "5000000000", // 5 gwei - min gasPrice in BSC
-    // gas:      "21000", // normal tx
-    gas:      "552000", // normal tx
-    to:       contractAddress,
-    data:     getRewardData,
-  }
-
-  const rawTx = await signTransaction(txAttrs, pvtKey)
-  // console.log("signedTx:", signedTx)
-
-  const txHashPromise = eth.sendSignedTransaction(rawTx)
-  const txHash = resolveTxHash(txHashPromise)
-  console.log("txHash:", txHash)
 }
 
-const depositTokens = () => {
-  let swap = new Contract(ABI, contractAddress)
-  swap = swap.methods
+const withdrawTokens = async () => {
+  const methodName = "withdrawUnderlying"
 
-  const depositBNBData = swap.depositBNB().encodeABI()
+  let contract = new Contract(ABI, contractAddress)
+  contract = contract.methods
 
-  // sample deposit amount
-  const depositAmountBNB = "0.001"
-  const depositAmount = toWei(depositAmountBNB, "ether")
+  console.log(Object.keys(contract))
+  process.exit()
+  // const amount = contract.
 
-  const data = depositBNBData
-  // TODO: estimategas
+  const method = contract[methodName]()
+
+  const data = method.encodeABI()
   const txAttrs = {
     gasPrice: "5000000000", // 5 gwei - min gasPrice in BSC
-    // gas:      "21000", // normal tx
-    gas:      "552000", // normal tx
     to:       contractAddress,
-    value:    depositAmount,
     data:     data,
+    from:     address,
   }
+  const gas = await estimateGas({ method, txAttrs })
+  txAttrs.gas = gas
 
   const rawTx = await signTransaction(txAttrs, pvtKey)
   // console.log("signedTx:", signedTx)
@@ -103,6 +66,33 @@ const depositTokens = () => {
   const txHash = resolveTxHash(txHashPromise)
   console.log("txHash:", txHash)
 }
+
+
+const claimTokens = async () => {
+  const methodName = "getReward"
+
+  let contract = new Contract(ABI, contractAddress)
+  contract = contract.methods
+  const method = contract[methodName]()
+
+  const data = method.encodeABI()
+  const txAttrs = {
+    gasPrice: "5000000000", // 5 gwei - min gasPrice in BSC
+    to:       contractAddress,
+    data:     data,
+    from:     address,
+  }
+  const gas = await estimateGas({ method, txAttrs })
+  txAttrs.gas = gas
+
+  const rawTx = await signTransaction(txAttrs, pvtKey)
+  // console.log("signedTx:", signedTx)
+
+  const txHashPromise = eth.sendSignedTransaction(rawTx)
+  const txHash = resolveTxHash(txHashPromise)
+  console.log("txHash:", txHash)
+}
+
 
 
 const TOKEN = "BNB"
@@ -135,7 +125,20 @@ const deinvestLoop = async () => {
 
 ;(async () => {
 
-  const fiveMinutes = 1000*60*5
-  setInterval(deinvestLoop, fiveMinutes)
+  // process.exit()
+
+
+  // depositBNB()
+
+  // withdrawTokens()
+
+  // claimTokens()
+
+
+  // depositBNB()
+  // depositTokens()
+
+  // const fiveMinutes = 1000*60*5
+  // setInterval(deinvestLoop, fiveMinutes)
 
 })()
