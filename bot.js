@@ -2,16 +2,10 @@ const Web3 = require("web3")
 const { promisify } = require("util")
 const { loadAccount } = require("./lib/account")
 const { loadPrivateKey } = require("./lib/pvt-key")
-const {
-  signTransaction,
-  resolveTxHash,
-  estimateGas
-} = require("./lib/tx")
 const { depositBNB } = require("./lib/bnb-pool")
 const { depositTokens } = require("./lib/pool")
 const web3 = new Web3("https://bsc-dataseed.binance.org/")
 const { eth, utils } = web3
-const { Contract } = eth
 
 
 // configs
@@ -29,11 +23,9 @@ const privateKeyPath = "./.private-key-bsc.txt"
 const pvtKey = loadPrivateKey(privateKeyPath)
 const address = loadAccount(eth, pvtKey)
 
-
 const claimAndWithdrawTokens = async () => {
   // TODO:
 }
-
 
 const deinvest = async () => {
   await claimAndWithdrawTokens()
@@ -80,7 +72,7 @@ const mainFn = async () => {
 
   // test functions - put CLAIM_WEEKLY_ACTIVE and DEINVEST_ACTIVE as false and uncomment to use
   // await depositBNB(...)
-  await depositTokens({ eth, pool: "CAKE", depositAmount: "0.01" })
+  await depositTokens({ eth, pool: "CAKE", depositAmount: "0.01", address, pvtKey })
   // ...
 }
 
