@@ -77,7 +77,7 @@ const mainFn = async () => {
 
   const claimThreshold = 10 // USD - claim tokens if proft is above this number
   const depositThreshold = 9 // USD - deposit tokens if value of tokens is above this amount
-  const swapThreshold = 8 // USD
+  const swapThreshold = 8 // USD - swap tokens if wallet balance (converted in USDs) is higher than this value
 
   await printStatus({ eth, pool, address })
 
