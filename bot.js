@@ -82,14 +82,14 @@ const mainFn = async () => {
   await printStatus({ eth, pool, address })
 
   console.log("open bot.js and uncomment code")
-  process.exit()
   console.log("uncomment and run the code below at your own risk - this code is still WIP")
 
   // claim all tokens
-  // await claimTokens({ eth, pool, address, pvtKey, claimThreshold })
+  await claimTokens({ eth, pool, address, pvtKey, claimThreshold })
 
   // deposit new tokens from the wallet balance
   // await depositTokens({ eth, pool, depositThreshold, address, pvtKey })
+  process.exit()
 
   // zap claimed bunnies to token so they can be deposited
   // await swapBunnyToToken({ eth, token: pool, address, pvtKey, swapThreshold })
