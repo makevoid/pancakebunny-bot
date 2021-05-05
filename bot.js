@@ -3,7 +3,13 @@ const { promisify } = require("util")
 const { loadAccount } = require("./lib/account")
 const { loadPrivateKey } = require("./lib/pvt-key")
 const { depositBNB } = require("./lib/bnb-pool")
-const { depositTokens } = require("./lib/pool")
+const {
+  printStatus,
+  depositTokens,
+  claimTokens,
+  withdrawTokens,
+} = require("./lib/pool")
+const { swapBunnyToToken } = require("./lib/zap")
 const web3 = new Web3("https://bsc-dataseed.binance.org/")
 const { eth, utils } = web3
 
@@ -11,7 +17,7 @@ const { eth, utils } = web3
 // configs
 
 const TOKEN = "CAKE"
-const DEINVEST_PRICE_TRESHOLD = 510 // withdraw under this price
+const DEINVEST_PRICE_TRESHOLD = 30 // withdraw all tokens (e.g. CAKEs) under this price
 
 // const CLAIM_WEEKLY_ACTIVE = true
 const CLAIM_WEEKLY_ACTIVE = false
@@ -22,20 +28,20 @@ const DEINVEST_ACTIVE = false
 const privateKeyPath = "./.private-key-bsc.txt"
 const pvtKey = loadPrivateKey(privateKeyPath)
 const address = loadAccount(eth, pvtKey)
+// 
+// const claimAndWithdrawTokens = async () => {
+//   // TODO:
+// }
 
-const claimAndWithdrawTokens = async () => {
-  // TODO:
-}
+// const deinvest = async () => {
+//   await claimAndWithdrawTokens()
+// }
 
-const deinvest = async () => {
-  await claimAndWithdrawTokens()
-}
-
-const reinvest = async () => {
-  await claimTokens()
-  await zapToken()
-  await depositTokens()
-}
+// const reinvest = async () => {
+//   await claimTokens()
+//   await zapToken()
+//   await depositTokens()
+// }
 
 const reinvestLoop = async () => {
   // if (oneWeekPassed) {
@@ -67,13 +73,28 @@ const checkPriceAndDeinvest = async () => {
 }
 
 const mainFn = async () => {
-  if (CLAIM_WEEKLY_ACTIVE) await claimWeekly()
-  if (DEINVEST_ACTIVE) await checkPriceAndDeinvest()
+  const pool = "CAKE"
 
-  // test functions - put CLAIM_WEEKLY_ACTIVE and DEINVEST_ACTIVE as false and uncomment to use
-  // await depositBNB(...)
-  await depositTokens({ eth, pool: "CAKE", depositAmount: "0.01", address, pvtKey })
-  // ...
+  const claimThreshold = 10 // USD - claim tokens if proft is above this number
+  const depositThreshold = 9 // USD - deposit tokens if value of tokens is above this amount
+  const swapThreshold = 8 // USD
+
+  await printStatus({ eth, pool, address })
+
+  // TODO
+  // if (CLAIM_WEEKLY_ACTIVE) await claimWeekly()
+  // if (DEINVEST_ACTIVE) await checkPriceAndDeinvest()
+
+  // claim all tokens
+  // await claimTokens({ eth, pool, address, pvtKey, claimThreshold })
+
+  // deposit new tokens from the wallet balance
+  await depositTokens({ eth, pool, depositThreshold, address, pvtKey })
+
+  process.exit()
+
+  // zap claimed bunnies to token so they can be deposited
+  await swapBunnyToToken({ eth, token: pool, address, pvtKey, swapThreshold })
 }
 
 const main = () => {

@@ -38,6 +38,9 @@ Assuming the bot starts with 10 CAKE and the price is 35
 - make sure you have sufficient BNB balance (10-20$ should be alright)
 - make sure you have sufficient Token balance (e.g. CAKE) - (if this is the first time testing the bot, please put a low amount of Tokens (CAKEs), I cannot guarantee that the bot is bug free, always check bscscan and the bot logs, if you see an error stop the bot, use this code at your own risk, end of the disclaimer, you have been warned :])
 - run `npm install`
+- go on https://pancakebunny.finance/zap - select Bunny on the top select box - Click the approve button to approve zapping Bunny
+- go on the pool you want to configure (e.g. https://pancakebunny.finance/pool/CAKE) and click approve (e.g. approve CAKEs on CAKE Pool)
+- make sure you have some BNBs on the account to pay for the gas fees or the transactions will fail
 
 ### Run
 
