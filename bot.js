@@ -82,7 +82,7 @@ const mainFn = async () => {
   await printStatus({ eth, pool, address })
 
   console.log("open bot.js and uncomment code")
-  process.exit()
+  // process.exit()
   console.log("uncomment and run the code below at your own risk - this code is still WIP")
 
   // claim all tokens
