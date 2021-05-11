@@ -28,26 +28,6 @@ const DEINVEST_ACTIVE = false
 const privateKeyPath = "./.private-key-bsc.txt"
 const pvtKey = loadPrivateKey(privateKeyPath)
 const address = loadAccount(eth, pvtKey)
-//
-// const claimAndWithdrawTokens = async () => {
-//   // TODO:
-// }
-
-// const deinvest = async () => {
-//   await claimAndWithdrawTokens()
-// }
-
-// const reinvest = async () => {
-//   await claimTokens()
-//   await zapToken()
-//   await depositTokens()
-// }
-
-const reinvestLoop = async () => {
-  // if (oneWeekPassed) {
-  //   await reinvest()
-  // }
-}
 
 const deinvestLoop = async () => {
   const price = await tokenPrice()
@@ -58,8 +38,6 @@ const deinvestLoop = async () => {
   }
 }
 
-// setInterval(deinvestLoop, fiveMinutes)
-
 const claimWeekly = async () => {
   const oneWeek = 604800 * 1000
   await claimTokens()
@@ -68,8 +46,6 @@ const claimWeekly = async () => {
 
 const checkPriceAndDeinvest = async () => {
   // TODO:
-  // const fiveMinutes = 1000*60*5
-  // setInterval(deinvestLoop, fiveMinutes)
 }
 
 const mainFn = async () => {
